@@ -1,10 +1,19 @@
 #include "get_next_line.h"
+#include <fcntl.h>
 
-int main()
+int		main(int argc, char **argv)
 {
-	char **line = NULL;
-	get_next_line(0, line);
-	ft_putstr(*line);
+	int		fd;
+	char	*line;
 
-	return (0);
+    fd = open("data.txt", O_RDONLY);
+    int i = 0;
+	while (get_next_line(fd, &line) == 1)
+	{
+		ft_putstr(line);
+		free(line);
+	}
+	if (argc == 2)
+		close(fd);
 }
+

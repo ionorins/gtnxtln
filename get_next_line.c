@@ -12,47 +12,44 @@
 
 #include "get_next_line.h"
 
-static t_list			*get_correct_file(t_list **file, int fd)
+int	get_next_line(const int fd, char **line)
 {
-	t_list				*tmp;
+    char *c, *aux;
+    t_list *crt, *first, *test;
+    unsigned i, status;
 
-	tmp = *file;
-	while (tmp)
-	{
-		if ((int)tmp->content_size == fd)
-			return (tmp);
-		tmp = tmp->next;
-	}
-	tmp = ft_lstnew("\0", fd);
-	ft_lstadd(file, tmp);
-	tmp = *file;
-	return (tmp);
-}
-
-int						get_next_line(const int fd, char **line)
-{
-	char				buf[BUFF_SIZE + 1];
-	static t_list		*file;
-	int					i;
-	int					ret;
-	t_list				*curr;
-
-	if ((fd < 0 || line == NULL || read(fd, buf, 0) < 0))
-		return (-1);
-	curr = get_correct_file(&file, fd);
-	MALLCHECK((*line = ft_strnew(1)));
-	while ((ret = read(fd, buf, BUFF_SIZE)))
-	{
-		buf[ret] = '\0';
-		MALLCHECK((curr->content = ft_strjoin(curr->content, buf)));
-		if (ft_strchr(buf, '\n'))
-			break ;
-	}
-	if (ret < BUFF_SIZE && !ft_strlen(curr->content))
-		return (0);
-	i = ft_copyuntil(line, curr->content, '\n');
-	(i < (int)ft_strlen(curr->content))
-		? curr->content += (i + 1)
-		: ft_strclr(curr->content);
-	return (1);
+    c = (char*)malloc(BUFF_SIZE);
+    status = read(fd, c, BUFF_SIZE);
+    if (status == 0)
+        return (0);
+    //printf("%i:", status);
+    first = ft_lstnew(c, BUFF_SIZE);
+    //ft_putchar(*first->content);
+    crt = first;
+    do
+    {
+        status = read(fd, c, BUFF_SIZE);
+        if (status == 0)
+            return (0);
+        crt->next = ft_lstnew(c, BUFF_SIZE);
+        //ft_putstr("tesh");
+        //ft_putchar(*crt->content);
+        crt = crt->next;
+    } while(*c != '\n');
+    //ft_putchar('0' + ft_lstcount(first));
+    *line = (char*)malloc((ft_lstcount(first) + 1) * BUFF_SIZE);
+    crt = first;
+    i = 0;
+    while (crt)
+    {
+        //ft_putchar(*crt->content);
+        (*line)[i++] = *crt->content;
+        crt = crt->next;
+    }
+    (*line)[i] = '\0';
+    //ft_putstr(*line);
+    free(c);
+    //already_read += ft_lstcount(first) + 1;
+    //ft_putchar("ijdhfiosdjfhos");
+	return (status);
 }
